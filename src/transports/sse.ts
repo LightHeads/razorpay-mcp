@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import express from "express";
 import { createRazorPayMCPServer } from '../core/mcp-server.js';
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
