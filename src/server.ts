@@ -86,6 +86,126 @@ export const createRazorPayMCPServer = (config: z.infer<typeof ServerConfigSchem
     }
   );
 
+  server.tool(
+    'getAllRefunds',
+    'Fetch all refunds with pagination support',
+    RazorpayPaginationSchema.shape,
+    async (params: RazorpayPaginationParams) => {
+      try {
+        const options = RazorpayPaginationSchema.parse(params);
+        const data = await razorpayService.getAllRefunds(options);
+        return { content: [{ type: 'text', text: JSON.stringify({ success: true, data }) }] };
+      } catch (error: any) {
+        return { content: [{ type: 'text', text: JSON.stringify({ success: false, error: error.message }) }] };
+      }
+    }
+  );
+
+  server.tool(
+    'getAllDisputes',
+    'Fetch all disputes with pagination support',
+    RazorpayPaginationSchema.shape,
+    async (params: RazorpayPaginationParams) => {
+      try {
+        const options = RazorpayPaginationSchema.parse(params);
+        const data = await razorpayService.getAllDisputes(options);
+        return { content: [{ type: 'text', text: JSON.stringify({ success: true, data }) }] };
+      } catch (error: any) {
+        return { content: [{ type: 'text', text: JSON.stringify({ success: false, error: error.message }) }] };
+      }
+    }
+  );
+
+  server.tool(
+    'getAllInvoices',
+    'Fetch all invoices with pagination support',
+    RazorpayPaginationSchema.shape,
+    async (params: RazorpayPaginationParams) => {
+      try {
+        const options = RazorpayPaginationSchema.parse(params);
+        const data = await razorpayService.getAllInvoices(options);
+        return { content: [{ type: 'text', text: JSON.stringify({ success: true, data }) }] };
+      } catch (error: any) {
+        return { content: [{ type: 'text', text: JSON.stringify({ success: false, error: error.message }) }] };
+      }
+    }
+  );
+
+  server.tool(
+    'getAccountBalance',
+    'Fetch account balance for a specific account',
+    AccountBalanceSchema.shape,
+    async (params: AccountBalanceParams) => {
+      try {
+        const { accountId } = AccountBalanceSchema.parse(params);
+        const data = await razorpayService.getAccountBalance(accountId);
+        return { content: [{ type: 'text', text: JSON.stringify({ success: true, data }) }] };
+      } catch (error: any) {
+        return { content: [{ type: 'text', text: JSON.stringify({ success: false, error: error.message }) }] };
+      }
+    }
+  );
+
+  server.tool(
+    'getAllContacts',
+    'Fetch all contacts with pagination support',
+    RazorpayPaginationSchema.shape,
+    async (params: RazorpayPaginationParams) => {
+      try {
+        const options = RazorpayPaginationSchema.parse(params);
+        const data = await razorpayService.getAllContacts(options);
+        return { content: [{ type: 'text', text: JSON.stringify({ success: true, data }) }] };
+      } catch (error: any) {
+        return { content: [{ type: 'text', text: JSON.stringify({ success: false, error: error.message }) }] };
+      }
+    }
+  );
+
+  server.tool(
+    'getAllTransactions',
+    'Fetch all transactions with pagination support',
+    RazorpayPaginationSchema.shape,
+    async (params: RazorpayPaginationParams) => {
+      try {
+        const options = RazorpayPaginationSchema.parse(params);
+        const data = await razorpayService.getAllTransactions(options);
+        return { content: [{ type: 'text', text: JSON.stringify({ success: true, data }) }] };
+      } catch (error: any) {
+        return { content: [{ type: 'text', text: JSON.stringify({ success: false, error: error.message }) }] };
+      }
+    }
+  );
+
+  server.tool(
+    'getAllVPAs',
+    'Fetch all VPAs (Virtual Payment Addresses) with pagination support',
+    RazorpayPaginationSchema.shape,
+    async (params: RazorpayPaginationParams) => {
+      try {
+        const options = RazorpayPaginationSchema.parse(params);
+        const data = await razorpayService.getAllVPAs(options);
+        return { content: [{ type: 'text', text: JSON.stringify({ success: true, data }) }] };
+      } catch (error: any) {
+        return { content: [{ type: 'text', text: JSON.stringify({ success: false, error: error.message }) }] };
+      }
+    }
+  );
+
+  server.tool(
+    'getAllCustomers',
+    'Fetch all customers with pagination support',
+    RazorpayPaginationSchema.shape,
+    async (params: RazorpayPaginationParams) => {
+      try {
+        const options = RazorpayPaginationSchema.parse(params);
+        const data = await razorpayService.getAllCustomers(options);
+        return { content: [{ type: 'text', text: JSON.stringify({ success: true, data }) }] };
+      } catch (error: any) {
+        return { content: [{ type: 'text', text: JSON.stringify({ success: false, error: error.message }) }] };
+      }
+    }
+  )
+
   
   return server;
 };

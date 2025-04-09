@@ -44,5 +44,51 @@ export class RazorpayService {
     const validatedOptions = RazorpayPaginationSchema.parse(options) as RazorpayQuery;
     return this.razorpay.settlements.all(validatedOptions);
   }
+
+  async getAllRefunds(options: RazorpayPaginationOptions = {}) {
+    const validatedOptions = RazorpayPaginationSchema.parse(options) as RazorpayQuery;
+    return this.razorpay.refunds.all(validatedOptions);
+  }
+
+  // Disputes
+  async getAllDisputes(options: RazorpayPaginationOptions = {}) {
+    const validatedOptions = RazorpayPaginationSchema.parse(options) as RazorpayQuery;
+    return this.razorpay.disputes.all(validatedOptions);
+  }
+
+  // Invoices
+  async getAllInvoices(options: RazorpayPaginationOptions = {}) {
+    const validatedOptions = RazorpayPaginationSchema.parse(options) as RazorpayQuery;
+    return this.razorpay.invoices.all(validatedOptions);
+  }
+
+  // Account Balances
+  async getAccountBalance(accountId: string) {
+    return this.razorpay.accounts.fetch(accountId);
+  }
+
+  // Contacts/Customers
+  async getAllContacts(options: RazorpayPaginationOptions = {}) {
+    const validatedOptions = RazorpayPaginationSchema.parse(options) as RazorpayQuery;
+    return this.razorpay.customers.all(validatedOptions);
+  }
+
+  // Transactions (Transfers)
+  async getAllTransactions(options: RazorpayPaginationOptions = {}) {
+    const validatedOptions = RazorpayPaginationSchema.parse(options) as RazorpayQuery;
+    return this.razorpay.transfers.all(validatedOptions);
+  }
+
+  // VPAs (Virtual Accounts)
+  async getAllVPAs(options: RazorpayPaginationOptions = {}) {
+    const validatedOptions = RazorpayPaginationSchema.parse(options) as RazorpayQuery;
+    return this.razorpay.virtualAccounts.all(validatedOptions);
+  }
+
+  // Customers
+  async getAllCustomers(options: RazorpayPaginationOptions = {}) {
+    const validatedOptions = RazorpayPaginationSchema.parse(options) as RazorpayQuery;
+    return this.razorpay.customers.all(validatedOptions);
+  }
 }
   
