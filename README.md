@@ -1,185 +1,119 @@
 # Razorpay MCP Server
 
-[![npm version](https://badge.fury.io/js/razorpay-mcp.svg)](https://badge.fury.io/js/razorpay-mcp) <!-- Replace 'razorpay-mcp' with your actual package name -->
+[![npm version](https://badge.fury.io/js/razorpay-mcp.svg)](https://badge.fury.io/js/razorpay-mcp) 
 
-Provides a Model Context Protocol (MCP) server interface for interacting with the Razorpay API. Supports both stdio and SSE (Server-Sent Events) transports.
+An unofficial Model Context Protocol (MCP) server for interacting with the Razorpay payment gateway API. This package provides a seamless integration between AI assistants and the Razorpay payment platform.
 
 ## Features
 
-*   Interact with various Razorpay endpoints (Orders, Payments, Settlements, Customers, etc.) via MCP.
-*   Run as a command-line tool using stdio.
-*   Run as an HTTP server using SSE (powered by Fastify).
-*   Type-safe interactions using Zod schemas and TypeScript.
-*   Configurable via environment variables or command-line arguments.
+* Interact with various Razorpay endpoints (Orders, Payments, Settlements, Customers, etc.) via MCP
+* Run as a command-line tool using stdio
+* Run as an HTTP server using Server-Sent Events (SSE)
+* Type-safe interactions using Zod schemas and TypeScript
+* Configurable via command-line arguments
 
 ## Installation
 
 ```bash
-npm install razorpay-mcp # Replace with your actual package name on npm
+pnpm install razorpay-mcp
 ```
 
 ## Usage
 
-### 1. As a Library (e.g., in your own Node.js application)
+### Running as a Command-Line Tool
 
-You can integrate the server creation logic into your own application.
-
-```typescript
-import { createRazorPayMCPServer, ServerConfig } from 'razorpay-mcp'; // Use your package name
-import { StdioServerTransport, SseServerTransport } from '@modelcontextprotocol/sdk/server'; // Assuming users install SDK too
-import Fastify from 'fastify';
-
-// Configuration (get from env vars, config files, etc.)
-const config: ServerConfig = {
-  razorpayKeyId: process.env.RAZORPAY_KEY_ID!,
-  razorpayKeySecret: process.env.RAZORPAY_KEY_SECRET!,
-};
-
-// --- Option A: Stdio Transport ---
-async function runStdio() {
-  if (!config.razorpayKeyId || !config.razorpayKeySecret) {
-    console.error("Razorpay Key ID and Secret are required.");
-    process.exit(1);
-  }
-  const mcpServer = createRazorPayMCPServer(config);
-  const transport = new StdioServerTransport();
-  await mcpServer.connect(transport);
-  console.log('Custom Razorpay MCP server started with stdio transport');
-}
-
-// --- Option B: SSE Transport ---
-async function runSse(port = 3000, host = '127.0.0.1') {
-   if (!config.razorpayKeyId || !config.razorpayKeySecret) {
-    console.error("Razorpay Key ID and Secret are required.");
-    process.exit(1);
-  }
-  const mcpServer = createRazorPayMCPServer(config);
-  const fastify = Fastify({ logger: true });
-  // Add CORS if needed: await fastify.register(cors, { origin: '*' });
-  const transport = new SseServerTransport({ fastify });
-  await mcpServer.connect(transport);
-  await fastify.listen({ port, host });
-  console.log(`Custom Razorpay MCP server started with SSE transport on http://${host}:${port}`);
-}
-
-// Choose which transport to run
-// runStdio().catch(console.error);
-// runSse().catch(console.error);
-```
-
-### 2. As a Command-Line Tool
-
-The package provides two commands that can be run directly using `npx` or after global installation.
+The package provides two execution modes that can be run directly using `npx` or after installation.
 
 **Configuration:**
 
-Credentials can be provided via:
+Provide your Razorpay credentials via command-line arguments:
+* `--key-id <your_key_id>` - Your Razorpay Key ID
+* `--key-secret <your_key_secret>` - Your Razorpay Key Secret
 
-*   Command-line arguments: `--key-id <your_key_id> --key-secret <your_key_secret>`
-*   Environment variables: `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`
-
-The SSE server also accepts `--port <port_number>` (or `PORT` env var) and `--host <hostname>` (or `HOST` env var).
+For the SSE server, you can also specify:
+* `--port <port_number>` - Default is 3001
 
 **Running the Stdio Server:**
 
 ```bash
-npx razorpay-mcp-stdio --key-id <your_key_id> --key-secret <your_key_secret>
-# or using env vars
-export RAZORPAY_KEY_ID=<your_key_id>
-export RAZORPAY_KEY_SECRET=<your_key_secret>
-npx razorpay-mcp-stdio
+npx razorpay-mcp-stdio --key-id rzp_test_yourkeyid --key-secret yoursecretkey
 ```
 
 **Running the SSE Server:**
 
 ```bash
-npx razorpay-mcp-sse --key-id <your_key_id> --key-secret <your_key_secret> --port 3001
-# or using env vars
-export RAZORPAY_KEY_ID=<your_key_id>
-export RAZORPAY_KEY_SECRET=<your_key_secret>
-export PORT=3001
-npx razorpay-mcp-sse
+npx razorpay-mcp-sse --key-id rzp_test_yourkeyid --key-secret yoursecretkey --port 3001
 ```
 
-This server will then be available at `http://127.0.0.1:3001` (or the specified host/port).
+This server will be available at `http://localhost:3001/sse` for clients to connect.
 
-### 3. Integrating with MCP Clients (e.g., Cursor)
+### Integrating With MCP Clients
 
-Configure your MCP client (like in `.cursor/mcp.json`) to use one of the commands.
+#### Cursor
 
-**Example for Stdio (Choose One):**
-
-*Method A: Using `npx` (Recommended for published/installed packages)*
+Configure your MCP client in Cursor by adding this to `.cursor/mcp.json`:
 
 ```json
 {
   "mcpServers": {
-    "razorpay-mcp-npx": {
+    "razorpay": {
       "command": "npx",
       "args": [
-        "-y", 
-        "razorpay-mcp", // Replace with your actual package name if different
-        "razorpay-mcp-stdio", 
-        "--key-id", "<your_key_id>",
-        "--key-secret", "<your_key_secret>"
-      ],
-      "env": {
-        "RAZORPAY_KEY_ID": "<your_key_id>",
-        "RAZORPAY_KEY_SECRET": "<your_key_secret>"
-      }
-    }
-  }
-}
-```
-
-*Method B: Direct Execution with Full Paths (Recommended for local development)*
-
-This method avoids issues with `npx` path resolution during development. Ensure you have run `npm run build` first.
-
-```json
-{
-  "mcpServers": {
-    "razorpay-mcp-local": {
-      "command": "/full/path/to/your/node", 
-      "args": [
-        "/full/path/to/your/project/razorpay-mcp/dist/stdio.js", 
-        "--key-id", "<your_key_id>",
-        "--key-secret", "<your_key_secret>"
+        "razorpay-mcp", 
+        "--key-id", "rzp_test_yourkeyid",
+        "--key-secret", "yoursecretkey"
       ]
     }
   }
 }
 ```
-*(Replace `/full/path/to/your/node` and `/full/path/to/your/project/razorpay-mcp/dist/stdio.js` with the actual absolute paths on your system. You can find the node path using `which node` in your terminal.)*
 
-**Example for SSE:**
+#### Claude or Other AI Assistants
 
-1.  **Run the SSE Server:** First, start the SSE server independently, either using `npx` or Docker as shown in the sections above. Make sure it's listening on an accessible host and port (e.g., `http://127.0.0.1:3000`).
+For Claude or other AI assistants that support MCP, you have two options:
 
-    ```bash
-    # Example using npx (run in a separate terminal or using a process manager like pm2)
-    export RAZORPAY_KEY_ID=<your_key_id>
-    export RAZORPAY_KEY_SECRET=<your_key_secret>
-    export PORT=3000
-    npx razorpay-mcp-sse
-    ```
+1. **Stdio Integration:**
+   Configure the assistant to spawn the MCP server with appropriate credentials
 
-2.  **Configure the Client:** Configure your MCP client to connect to the running server's URL. The exact configuration format depends on the client. If the client supports specifying an HTTP endpoint directly (this might not be standard in all `mcp.json` formats), it might look something like this *hypothetical* example:
+2. **SSE Integration:**
+   - Start the SSE server independently: `npx razorpay-mcp-sse --key-id rzp_test_yourkeyid --key-secret yoursecretkey --port 3001`
+   - Configure the AI assistant to connect to `http://localhost:3001/sse`
 
-    ```json
-    {
-      "mcpServers": {
-        "myRazorpaySse": {
-          // Hypothetical configuration for a client supporting direct HTTP endpoints
-          "httpEndpoint": "http://127.0.0.1:3000", // URL where the SSE server is running
-          "ssePath": "/sse", // The path specified in sse.ts (default: /sse)
-          "messagePath": "/messages" // The path specified in sse.ts (default: /messages)
-          // Note: Authentication/headers might be handled differently depending on the client
-        }
-      }
-    }
-    ```
-    *(**Important:** Verify your specific MCP client's documentation for the correct way to configure connections to HTTP/SSE endpoints. The standard `command`/`args` method used for stdio might not apply directly to SSE.)*
+#### Web Applications
+
+For web applications, use the SSE server:
+
+1. Start the SSE server: `npx razorpay-mcp-sse --key-id rzp_test_yourkeyid --key-secret yoursecretkey --port 3001`
+
+2. Connect from your web app:
+   ```javascript
+   // Create SSE connection
+   const eventSource = new EventSource('http://localhost:3001/sse');
+   
+   // Listen for the initial connection event
+   eventSource.addEventListener('connected', (event) => {
+     const data = JSON.parse(event.data);
+     const sessionId = data.sessionId;
+     console.log(`Connected with session ID: ${sessionId}`);
+   });
+   
+   // Send API requests
+   async function callRazorpayAPI(toolName, params) {
+     const response = await fetch(`http://localhost:3001/messages?sessionId=${sessionId}`, {
+       method: 'POST',
+       headers: {
+         'Content-Type': 'application/json'
+       },
+       body: JSON.stringify({
+         type: 'toolCall',
+         id: Date.now().toString(),
+         name: toolName,
+         params: params
+       })
+     });
+     return await response.json();
+   }
+   ```
 
 ## Docker Usage
 
@@ -187,51 +121,53 @@ You can build and run this MCP server using Docker.
 
 **1. Build the Image:**
 
-From the root of the project directory, run:
-
 ```bash
 docker build -t razorpay-mcp .
 ```
-*(Replace `razorpay-mcp` with your preferred image name)*
 
 **2. Run the Container:**
-
-You can run either the `stdio` or `sse` server by overriding the default command. Pass configuration via environment variables.
 
 **Running the Stdio Server:**
 
 ```bash
 docker run --rm -i \
-  -e RAZORPAY_KEY_ID=<your_key_id> \
-  -e RAZORPAY_KEY_SECRET=<your_key_secret> \
-  razorpay-mcp node dist/stdio.js # Override CMD to specify stdio explicitly (or rely on default)
+  razorpay-mcp node dist/stdio.js --key-id rzp_test_yourkeyid --key-secret yoursecretkey
 ```
-*(Note: `-i` is important for stdio interaction)*
 
 **Running the SSE Server:**
 
 ```bash
-docker run --rm -p 3000:3000 \
-  -e RAZORPAY_KEY_ID=<your_key_id> \
-  -e RAZORPAY_KEY_SECRET=<your_key_secret> \
-  -e PORT=3000 \ # Port inside the container
-  -e HOST=0.0.0.0 \ # Listen on all interfaces inside the container
-  razorpay-mcp node dist/sse.js # Override CMD to specify sse
+docker run --rm -p 3001:3001 \
+  razorpay-mcp node dist/sse.js --key-id rzp_test_yourkeyid --key-secret yoursecretkey --port 3001
 ```
-*(The server will be accessible on `http://localhost:3000` on your host machine)*
 
-You can adjust the `-p` flag (e.g., `-p 8080:3000`) to map the container's port 3000 to a different port on your host.
+The server will be accessible on `http://localhost:3001/sse` on your host machine.
 
-**Integrating with MCP Clients (Docker):**
+**Connecting to the Docker-hosted SSE Server:**
 
-If your MCP client (like Cursor) runs commands, you might configure it to use `docker run ...` instead of `npx`. The exact configuration depends on the client's capabilities. For clients expecting an HTTP endpoint, you would run the SSE container and provide its URL (e.g., `http://localhost:3000/sse` based on the example above).
+Use the same client-side code as shown in the Web Applications section, but make sure your host machine can access the container's port.
 
-## Development
+## Available Razorpay Endpoints
 
-1.  Clone the repository.
-2.  Install dependencies: `npm install`
-3.  Build the project: `npm run build`
-4.  Lint/Format: `npm run lint`, `npm run format`
+This MCP server provides access to these Razorpay API endpoints:
+
+* `getAllOrders` - Fetch all orders with pagination
+* `getAllPayments` - Fetch all payments with pagination
+* `getAllSettlements` - Fetch all settlements with pagination
+* `getAllRefunds` - Fetch all refunds with pagination
+* `getAllDisputes` - Fetch all disputes with pagination
+* `getAllInvoices` - Fetch all invoices with pagination
+* `getAccountBalance` - Fetch account balance for a specific account
+* `getAllContacts` - Fetch all contacts with pagination
+* `getAllTransactions` - Fetch all transactions with pagination
+* `getAllVPAs` - Fetch all VPAs (Virtual Payment Addresses) with pagination
+* `getAllCustomers` - Fetch all customers with pagination
+
+All pagination options accept these parameters:
+* `count` - Number of records to fetch (max 100)
+* `skip` - Number of records to skip
+* `from` - Start timestamp
+* `to` - End timestamp
 
 ## License
 
