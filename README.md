@@ -36,13 +36,13 @@ For the SSE server, you can also specify:
 **Running the Stdio Server:**
 
 ```bash
-npx razorpay-mcp-stdio --key-id rzp_test_yourkeyid --key-secret yoursecretkey
+npx razorpay-mcp --key-id rzp_test_yourkeyid --key-secret yoursecretkey
 ```
 
 **Running the SSE Server:**
 
 ```bash
-npx razorpay-mcp-sse --key-id rzp_test_yourkeyid --key-secret yoursecretkey --port 3001
+npx razorpay-mcp --key-id rzp_test_yourkeyid --key-secret yoursecretkey --port 3001
 ```
 
 This server will be available at `http://localhost:3001/sse` for clients to connect.
