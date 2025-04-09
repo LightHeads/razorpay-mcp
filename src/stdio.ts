@@ -2,7 +2,6 @@
 
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { parseArgs } from 'node:util';
-import { version } from './package.json';
 import { createRazorPayMCPServer } from './server.js';
 import { z } from 'zod';
 
@@ -50,7 +49,8 @@ async function main() {
     const mcpServer = createRazorPayMCPServer(validatedConfig.data);
     const transport = new StdioServerTransport();
     await mcpServer.connect(transport);
-  } catch (error) {
+    console.log('Razorpay MCP server started');
+  } catch (error: any) {
     console.error('Error:', error.message);
     process.exit(1);
   }

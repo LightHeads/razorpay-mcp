@@ -37,7 +37,7 @@ export const createRazorPayMCPServer = (config: z.infer<typeof ServerConfigSchem
     version: '1.0.0',
     methods: {
       // Get payment details
-      getPayment: async (params) => {
+      getPayment: async (params: any) => {
         try {
           // Validate input parameters
           const { id } = PaymentRequestSchema.parse(params);
@@ -47,8 +47,8 @@ export const createRazorPayMCPServer = (config: z.infer<typeof ServerConfigSchem
           
           // Validate response
           return PaymentResponseSchema.parse(response);
-        } catch (error) {
-          const errorResponse = { success: false, error: error.message };
+        } catch (error: any) {
+          const errorResponse = { success: false, error: error };
           return PaymentResponseSchema.parse(errorResponse);
         }
       }
