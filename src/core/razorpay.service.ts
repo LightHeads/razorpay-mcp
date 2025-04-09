@@ -1,21 +1,5 @@
 import Razorpay from 'razorpay';
-import { z } from 'zod';
-
-export const RazorpayPaginationSchema = z.object({
-  skip: z.number().optional(),
-  count: z.number().optional(),
-  from: z.number().optional(),
-  to: z.number().optional()
-});
-
-export type RazorpayPaginationOptions = z.infer<typeof RazorpayPaginationSchema>;
-
-type RazorpayQuery = {
-  skip?: number;
-  count?: number;
-  from?: number;
-  to?: number;
-};
+import { RazorpayPaginationSchema, type RazorpayPaginationOptions, type RazorpayQuery } from './schemas.js';
 
 export class RazorpayService {
   private razorpay: Razorpay;

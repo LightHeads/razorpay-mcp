@@ -1,8 +1,6 @@
-#!/usr/bin/env node
-
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { parseArgs } from 'node:util';
-import { createRazorPayMCPServer } from './server.js';
+import { createRazorPayMCPServer } from '../core/mcp-server.js';
 import { z } from 'zod';
 
 const RazorpayConfigSchema = z.object({
@@ -27,13 +25,21 @@ async function main() {
         required: true,
       },
     },
+    allowPositionals: false,
   });
 
-  // Use Razorpay credentials from CLI arguments or environment variables
-  const razorpayKeyId = keyId ?? process.env.RAZORPAY_KEY_ID;
-  const razorpayKeySecret = keySecret ?? process.env.RAZORPAY_KEY_SECRET;
+  // Use Razorpay credentials ONLY from CLI arguments
+  const razorpayKeyId = keyId;
+  const razorpayKeySecret = keySecret;
+
+  // Basic check (Zod will do a more thorough check later)
+  if (!razorpayKeyId || !razorpayKeySecret) {
+    console.error("Error: --key-id and --key-secret arguments are required.");
+    process.exit(1);
+  }
 
   try {
+    // Zod validation will now effectively just check format, as presence is checked above
     const validatedConfig = RazorpayConfigSchema.safeParse({
       razorpayKeyId,
       razorpayKeySecret,

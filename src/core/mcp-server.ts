@@ -1,25 +1,15 @@
-import { z } from 'zod';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { RazorpayService, RazorpayPaginationSchema } from './razorpay/index.js';
+import { RazorpayService } from './razorpay.service.js';
+import { 
+  ServerConfigSchema, 
+  type ServerConfig,
+  RazorpayPaginationSchema, 
+  type RazorpayPaginationOptions,
+  AccountBalanceParamsSchema,
+  type AccountBalanceParams
+} from './schemas.js';
 
-// Zod schemas for validation
-const ServerConfigSchema = z.object({
-  razorpayKeyId: z.string().min(1),
-  razorpayKeySecret: z.string().min(1)
-});
-
-const ResponseSchema = z.object({
-  success: z.boolean(),
-  data: z.any().optional(),
-  error: z.string().optional()
-});
-
-const AccountBalanceSchema = z.object({ accountId: z.string() });
-
-type RazorpayPaginationParams = z.infer<typeof RazorpayPaginationSchema>;
-type AccountBalanceParams = z.infer<typeof AccountBalanceSchema>;
-
-export const createRazorPayMCPServer = (config: z.infer<typeof ServerConfigSchema>) => {
+export const createRazorPayMCPServer = (config: ServerConfig) => {
   // Validate config
   const validatedConfig = ServerConfigSchema.parse(config);
 
@@ -43,12 +33,11 @@ export const createRazorPayMCPServer = (config: z.infer<typeof ServerConfigSchem
     'getAllOrders',
     'Fetch all orders with pagination support',
     RazorpayPaginationSchema.shape,
-    async (params: RazorpayPaginationParams) => {
+    async (params: RazorpayPaginationOptions) => {
       try {
         const options = RazorpayPaginationSchema.parse(params);
         const data = await razorpayService.getAllOrders(options);
         // MCP expects a specific return format (e.g., { content: [{ type: 'text', text: '...' }] })
-        // Adjusting the return to be more MCP-idiomatic. Assuming simple JSON string for now.
         return { content: [{ type: 'text', text: JSON.stringify({ success: true, data }) }] };
       } catch (error: any) {
         return { content: [{ type: 'text', text: JSON.stringify({ success: false, error: error.message }) }] };
@@ -60,7 +49,7 @@ export const createRazorPayMCPServer = (config: z.infer<typeof ServerConfigSchem
     'getAllPayments',
     'Fetch all payments with pagination support',
     RazorpayPaginationSchema.shape,
-    async (params: RazorpayPaginationParams) => {
+    async (params: RazorpayPaginationOptions) => {
       try {
         const options = RazorpayPaginationSchema.parse(params);
         const data = await razorpayService.getAllPayments(options);
@@ -75,7 +64,7 @@ export const createRazorPayMCPServer = (config: z.infer<typeof ServerConfigSchem
     'getAllSettlements',
     'Fetch all settlements with pagination support',
     RazorpayPaginationSchema.shape,
-    async (params: RazorpayPaginationParams) => {
+    async (params: RazorpayPaginationOptions) => {
       try {
         const options = RazorpayPaginationSchema.parse(params);
         const data = await razorpayService.getAllSettlements(options);
@@ -90,7 +79,7 @@ export const createRazorPayMCPServer = (config: z.infer<typeof ServerConfigSchem
     'getAllRefunds',
     'Fetch all refunds with pagination support',
     RazorpayPaginationSchema.shape,
-    async (params: RazorpayPaginationParams) => {
+    async (params: RazorpayPaginationOptions) => {
       try {
         const options = RazorpayPaginationSchema.parse(params);
         const data = await razorpayService.getAllRefunds(options);
@@ -105,7 +94,7 @@ export const createRazorPayMCPServer = (config: z.infer<typeof ServerConfigSchem
     'getAllDisputes',
     'Fetch all disputes with pagination support',
     RazorpayPaginationSchema.shape,
-    async (params: RazorpayPaginationParams) => {
+    async (params: RazorpayPaginationOptions) => {
       try {
         const options = RazorpayPaginationSchema.parse(params);
         const data = await razorpayService.getAllDisputes(options);
@@ -120,7 +109,7 @@ export const createRazorPayMCPServer = (config: z.infer<typeof ServerConfigSchem
     'getAllInvoices',
     'Fetch all invoices with pagination support',
     RazorpayPaginationSchema.shape,
-    async (params: RazorpayPaginationParams) => {
+    async (params: RazorpayPaginationOptions) => {
       try {
         const options = RazorpayPaginationSchema.parse(params);
         const data = await razorpayService.getAllInvoices(options);
@@ -134,10 +123,10 @@ export const createRazorPayMCPServer = (config: z.infer<typeof ServerConfigSchem
   server.tool(
     'getAccountBalance',
     'Fetch account balance for a specific account',
-    AccountBalanceSchema.shape,
+    AccountBalanceParamsSchema.shape,
     async (params: AccountBalanceParams) => {
       try {
-        const { accountId } = AccountBalanceSchema.parse(params);
+        const { accountId } = AccountBalanceParamsSchema.parse(params);
         const data = await razorpayService.getAccountBalance(accountId);
         return { content: [{ type: 'text', text: JSON.stringify({ success: true, data }) }] };
       } catch (error: any) {
@@ -150,7 +139,7 @@ export const createRazorPayMCPServer = (config: z.infer<typeof ServerConfigSchem
     'getAllContacts',
     'Fetch all contacts with pagination support',
     RazorpayPaginationSchema.shape,
-    async (params: RazorpayPaginationParams) => {
+    async (params: RazorpayPaginationOptions) => {
       try {
         const options = RazorpayPaginationSchema.parse(params);
         const data = await razorpayService.getAllContacts(options);
@@ -165,7 +154,7 @@ export const createRazorPayMCPServer = (config: z.infer<typeof ServerConfigSchem
     'getAllTransactions',
     'Fetch all transactions with pagination support',
     RazorpayPaginationSchema.shape,
-    async (params: RazorpayPaginationParams) => {
+    async (params: RazorpayPaginationOptions) => {
       try {
         const options = RazorpayPaginationSchema.parse(params);
         const data = await razorpayService.getAllTransactions(options);
@@ -180,7 +169,7 @@ export const createRazorPayMCPServer = (config: z.infer<typeof ServerConfigSchem
     'getAllVPAs',
     'Fetch all VPAs (Virtual Payment Addresses) with pagination support',
     RazorpayPaginationSchema.shape,
-    async (params: RazorpayPaginationParams) => {
+    async (params: RazorpayPaginationOptions) => {
       try {
         const options = RazorpayPaginationSchema.parse(params);
         const data = await razorpayService.getAllVPAs(options);
@@ -195,7 +184,7 @@ export const createRazorPayMCPServer = (config: z.infer<typeof ServerConfigSchem
     'getAllCustomers',
     'Fetch all customers with pagination support',
     RazorpayPaginationSchema.shape,
-    async (params: RazorpayPaginationParams) => {
+    async (params: RazorpayPaginationOptions) => {
       try {
         const options = RazorpayPaginationSchema.parse(params);
         const data = await razorpayService.getAllCustomers(options);
