@@ -1,6 +1,6 @@
 {
   "name": "razorpay-mcp",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Razorpay MCP server providing stdio and SSE transports",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -25,8 +25,8 @@
     }
   },
   "bin": {
-    "razorpay-mcp-stdio": "./dist/transports/stdio.js",
-    "razorpay-mcp-sse": "./dist/transports/sse.js"
+    "razorpay-mcp-stdio": "./dist/transports/stdio.cjs",
+    "razorpay-mcp-sse": "./dist/transports/sse.cjs"
   },
   "keywords": [
     "razorpay",

@@ -1,57 +1,32 @@
 # Razorpay MCP Server
 
-[![npm version](https://badge.fury.io/js/razorpay-mcp.svg)](https://badge.fury.io/js/razorpay-mcp) 
+> Connect your Razorpay payment gateway to Cursor, Claude, Windsurf, and other AI assistants.
 
 An unofficial Model Context Protocol (MCP) server for interacting with the Razorpay payment gateway API. This package provides a seamless integration between AI assistants and the Razorpay payment platform.
 
-## Features
+The [Model Context Protocol](https://modelcontextprotocol.io/introduction) (MCP) standardizes how Large Language Models (LLMs) talk to external services like Razorpay. It connects AI assistants directly with your Razorpay account and allows them to manage orders, payments, settlements, and more. See the [full list of tools](#available-tools).
 
-* Interact with various Razorpay endpoints (Orders, Payments, Settlements, Customers, etc.) via MCP
-* Run as a command-line tool using stdio
-* Run as an HTTP server using Server-Sent Events (SSE)
-* Type-safe interactions using Zod schemas and TypeScript
-* Configurable via command-line arguments
+## Prerequisites
 
-## Installation
+You will need Node.js installed on your machine. You can check this by running:
 
-```bash
-pnpm install razorpay-mcp
+```shell
+node -v
 ```
 
-## Usage
+If you don't have Node.js installed, you can download it from [nodejs.org](https://nodejs.org/).
 
-### Running as a Command-Line Tool
+## Setup
 
-The package provides two execution modes that can be run directly using `npx` or after installation.
+### 1. Razorpay API Keys
 
-**Configuration:**
+First, go to your [Razorpay Dashboard](https://dashboard.razorpay.com/) > Settings > API Keys and generate a key pair. You'll need both the Key ID and Key Secret.
 
-Provide your Razorpay credentials via command-line arguments:
-* `--key-id <your_key_id>` - Your Razorpay Key ID
-* `--key-secret <your_key_secret>` - Your Razorpay Key Secret
+Make sure to copy both values, as you won't be able to see the Key Secret again.
 
-For the SSE server, you can also specify:
-* `--port <port_number>` - Default is 3001
+### 2. Configure MCP Client
 
-**Running the Stdio Server:**
-
-```bash
-npx razorpay-mcp --key-id rzp_test_yourkeyid --key-secret yoursecretkey
-```
-
-**Running the SSE Server:**
-
-```bash
-npx razorpay-mcp --key-id rzp_test_yourkeyid --key-secret yoursecretkey --port 3001
-```
-
-This server will be available at `http://localhost:3001/sse` for clients to connect.
-
-### Integrating With MCP Clients
-
-#### Cursor
-
-Configure your MCP client in Cursor by adding this to `.cursor/mcp.json`:
+Next, configure your MCP client (such as Cursor) to use this server. Most MCP clients store the configuration as JSON in the following format:
 
 ```json
 {
@@ -59,63 +34,87 @@ Configure your MCP client in Cursor by adding this to `.cursor/mcp.json`:
     "razorpay": {
       "command": "npx",
       "args": [
-        "razorpay-mcp", 
-        "--key-id", "rzp_test_yourkeyid",
-        "--key-secret", "yoursecretkey"
+        "-y",
+        "razorpay-mcp@latest",
+        "--key-id",
+        "rzp_test_yourkeyid",
+        "--key-secret",
+        "yoursecretkey"
       ]
     }
   }
 }
 ```
 
-#### Claude or Other AI Assistants
+Replace `rzp_test_yourkeyid` and `yoursecretkey` with your Razorpay API credentials.
 
-For Claude or other AI assistants that support MCP, you have two options:
+If you are on Windows, you will need to [prefix the command](#windows). If your MCP client doesn't accept JSON, the direct CLI command is:
 
-1. **Stdio Integration:**
-   Configure the assistant to spawn the MCP server with appropriate credentials
+```shell
+npx -y razorpay-mcp@latest --key-id=rzp_test_yourkeyid --key-secret=yoursecretkey
+```
 
-2. **SSE Integration:**
-   - Start the SSE server independently: `npx razorpay-mcp-sse --key-id rzp_test_yourkeyid --key-secret yoursecretkey --port 3001`
-   - Configure the AI assistant to connect to `http://localhost:3001/sse`
+> Note: Do not run this command directly - this is meant to be executed by your MCP client in order to start the server. `npx` automatically downloads the latest version of the MCP server from `npm` and runs it in a single command.
 
-#### Web Applications
+#### Windows
 
-For web applications, use the SSE server:
+On Windows, you will need to prefix the command with `cmd /c`:
 
-1. Start the SSE server: `npx razorpay-mcp-sse --key-id rzp_test_yourkeyid --key-secret yoursecretkey --port 3001`
+```json
+{
+  "mcpServers": {
+    "razorpay": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "razorpay-mcp@latest",
+        "--key-id",
+        "rzp_test_yourkeyid",
+        "--key-secret",
+        "yoursecretkey"
+      ]
+    }
+  }
+}
+```
 
-2. Connect from your web app:
-   ```javascript
-   // Create SSE connection
-   const eventSource = new EventSource('http://localhost:3001/sse');
-   
-   // Listen for the initial connection event
-   eventSource.addEventListener('connected', (event) => {
-     const data = JSON.parse(event.data);
-     const sessionId = data.sessionId;
-     console.log(`Connected with session ID: ${sessionId}`);
-   });
-   
-   // Send API requests
-   async function callRazorpayAPI(toolName, params) {
-     const response = await fetch(`http://localhost:3001/messages?sessionId=${sessionId}`, {
-       method: 'POST',
-       headers: {
-         'Content-Type': 'application/json'
-       },
-       body: JSON.stringify({
-         type: 'toolCall',
-         id: Date.now().toString(),
-         name: toolName,
-         params: params
-       })
-     });
-     return await response.json();
-   }
-   ```
+or with `wsl` if you are running Node.js inside WSL:
 
-## Docker Usage
+```json
+{
+  "mcpServers": {
+    "razorpay": {
+      "command": "wsl",
+      "args": [
+        "npx",
+        "-y", 
+        "razorpay-mcp@latest",
+        "--key-id",
+        "rzp_test_yourkeyid",
+        "--key-secret",
+        "yoursecretkey"
+      ]
+    }
+  }
+}
+```
+
+## Alternative Setups
+
+### Running as a Standalone Server
+
+You can also run this package as a standalone server using Server-Sent Events (SSE):
+
+```bash
+pnpm install razorpay-mcp
+pnpm razorpay-mcp-sse --key-id rzp_test_yourkeyid --key-secret yoursecretkey --port 3001
+```
+
+This server will be available at `http://localhost:3001/sse` for clients to connect.
+
+### Docker Usage
 
 You can build and run this MCP server using Docker.
 
@@ -127,47 +126,50 @@ docker build -t razorpay-mcp .
 
 **2. Run the Container:**
 
-**Running the Stdio Server:**
-
-```bash
-docker run --rm -i \
-  razorpay-mcp node dist/stdio.js --key-id rzp_test_yourkeyid --key-secret yoursecretkey
-```
-
-**Running the SSE Server:**
-
 ```bash
 docker run --rm -p 3001:3001 \
-  razorpay-mcp node dist/sse.js --key-id rzp_test_yourkeyid --key-secret yoursecretkey --port 3001
+  razorpay-mcp node dist/transports/sse.js --key-id rzp_test_yourkeyid --key-secret yoursecretkey --port 3001
 ```
 
 The server will be accessible on `http://localhost:3001/sse` on your host machine.
 
-**Connecting to the Docker-hosted SSE Server:**
+## Available Tools
 
-Use the same client-side code as shown in the Web Applications section, but make sure your host machine can access the container's port.
+The following Razorpay tools are available to the LLM:
 
-## Available Razorpay Endpoints
+### Orders and Payments
 
-This MCP server provides access to these Razorpay API endpoints:
+- `getAllOrders`: Fetch all orders with pagination support
+- `getAllPayments`: Fetch all payments with pagination support
+- `getAllRefunds`: Fetch all refunds with pagination support
 
-* `getAllOrders` - Fetch all orders with pagination
-* `getAllPayments` - Fetch all payments with pagination
-* `getAllSettlements` - Fetch all settlements with pagination
-* `getAllRefunds` - Fetch all refunds with pagination
-* `getAllDisputes` - Fetch all disputes with pagination
-* `getAllInvoices` - Fetch all invoices with pagination
-* `getAccountBalance` - Fetch account balance for a specific account
-* `getAllContacts` - Fetch all contacts with pagination
-* `getAllTransactions` - Fetch all transactions with pagination
-* `getAllVPAs` - Fetch all VPAs (Virtual Payment Addresses) with pagination
-* `getAllCustomers` - Fetch all customers with pagination
+### Financials
+
+- `getAllSettlements`: Fetch all settlements with pagination support
+- `getAccountBalance`: Fetch account balance for a specific account
+- `getAllTransactions`: Fetch all transactions with pagination support
+
+### Customer Management
+
+- `getAllContacts`: Fetch all contacts with pagination support
+- `getAllCustomers`: Fetch all customers with pagination support
+- `getAllVPAs`: Fetch all VPAs (Virtual Payment Addresses) with pagination support
+
+### Documentation and Support
+
+- `getAllInvoices`: Fetch all invoices with pagination support
+- `getAllDisputes`: Fetch all disputes with pagination support
 
 All pagination options accept these parameters:
 * `count` - Number of records to fetch (max 100)
 * `skip` - Number of records to skip
 * `from` - Start timestamp
 * `to` - End timestamp
+
+## Resources
+
+- [**Model Context Protocol**](https://modelcontextprotocol.io/introduction): Learn more about MCP and its capabilities.
+- [**Razorpay API Documentation**](https://razorpay.com/docs/api/): Learn more about the Razorpay API.
 
 ## License
 
