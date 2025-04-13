@@ -10,7 +10,7 @@ The most reliable way to use this package:
 
 ```bash
 # Install globally first
-npm install -g razorpay-mcp@0.1.3
+npm install -g razorpay-mcp@0.1.4
 
 # Then use the binary directly
 razorpay-mcp-stdio --key-id rzp_test_yourkeyid --key-secret yoursecretkey
@@ -62,7 +62,7 @@ After installing globally, add this configuration to your `.cursor/mcp.json` fil
 
 ```bash
 # Install globally first
-npm install -g razorpay-mcp@0.1.3
+npm install -g razorpay-mcp@0.1.4
 
 # Then use the binary directly
 razorpay-mcp-sse --key-id rzp_test_yourkeyid --key-secret yoursecretkey --port 3001
