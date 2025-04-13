@@ -1,49 +1,37 @@
-# Dockerfile
+# Dockerfile for Razorpay MCP Server
 
-# ---- Builder Stage ----
-# Use a Node.js version that matches your development environment
-FROM node:20 AS builder
-
-# Install pnpm
-RUN npm install -g pnpm
+# Build stage
+FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files and install dependencies (including devDependencies for build)
-# Use pnpm if that's your package manager
-COPY package.json pnpm-lock.yaml ./
-# COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
-# RUN pnpm install --frozen-lockfile
+# Copy package files
+COPY package.json ./
 
-# Copy the rest of the application source code
+# Install dependencies
+RUN npm install
+
+# Copy source code
 COPY . .
 
 # Build the application
-RUN pnpm run build
+RUN npm run build
 
-# Prune devDependencies for the runtime stage
-RUN pnpm prune --production
-# If using pnpm, handle production dependencies appropriately if needed
-
-# ---- Runtime Stage ----
-# Use a lightweight Node.js image
-FROM node:20-alpine
+# Runtime stage
+FROM node:18-alpine
 
 WORKDIR /app
 
-# Copy only the built code and production dependencies from the builder stage
+# Copy built files and dependencies
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 
-# Expose the default SSE port (optional, but good practice)
-EXPOSE 3000
+# Make sure the entry point scripts are executable
+RUN chmod +x ./dist/transports/stdio.cjs ./dist/transports/sse.cjs
 
-# Set the user for better security (optional, requires user exists in alpine)
-# USER node
+# Expose port for SSE server
+EXPOSE 3001
 
-# Define the entrypoint command to run the server
-# This allows users to specify 'stdio' or 'sse' and pass args
-# Default to 'stdio' if no command is given
-CMD ["node", "dist/stdio.js"] 
+# Default command (can be overridden)
+CMD ["node", "dist/transports/stdio.cjs", "--help"] 

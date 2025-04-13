@@ -20,6 +20,9 @@ importers:
       razorpay:
         specifier: ^2.9.6
         version: 2.9.6
+      razorpay-mcp:
+        specifier: 'link:'
+        version: 'link:'
       zod:
         specifier: ^3.24.2
         version: 3.24.2
