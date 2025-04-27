@@ -175,7 +175,7 @@ async function main() {
 }
 
 // Start the server
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   main().catch((error) => {
     console.error('Unhandled error:', error);
     process.exit(1);
