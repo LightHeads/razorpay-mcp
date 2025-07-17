@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/lightheads-razorpay-mcp-badge.png)](https://mseep.ai/app/lightheads-razorpay-mcp)
+
 # Razorpay MCP Server
 
 > Connect your Razorpay payment gateway to AI assistants using the Model Context Protocol
